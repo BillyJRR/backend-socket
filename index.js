@@ -5,8 +5,9 @@ const bodyParser = require("body-parser");
 
 const app = express();
 const server = http.createServer(app);
+const port = process.env.PORT || 3000;
 const io = new Server(server, {
-  cors: { origin: "*" } // habilitar CORS para pruebas
+  cors: { origin: ["https://nice-tree-06cd60e1e.1.azurestaticapps.net", "http://localhost:5500"], methods: ["GET","POST"] }
 });
 
 app.use(bodyParser.json());
@@ -35,6 +36,4 @@ app.post("/send-data", (req, res) => {
   res.json({ status: "ok", sent: data });
 });
 
-server.listen(3000, () => {
-  console.log("Backend corriendo en http://localhost:3000");
-});
+server.listen(port, () => console.log(`Server listening on ${port}`));
