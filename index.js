@@ -32,7 +32,7 @@ async function setupRedisAdapter() {
       port: REDIS_PORT_SOCKET,
       tls: true
     },
-    username: "default",
+    // username: "default",
     password: REDIS_KEY_SOCKET
   });
 
