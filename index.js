@@ -31,12 +31,12 @@ const pubClient = redis.createClient({
   tls: {} // TLS activado para Azure
 });
 
-pubClient.on("error", (err) => console.error("Redis pubClient error", err));
-await pubClient.connect();
+// pubClient.on("error", (err) => console.error("Redis pubClient error", err));
+// await pubClient.connect();
 
 const subClient = pubClient.duplicate();
-subClient.on("error", (err) => console.error("Redis subClient error", err));
-await subClient.connect();
+// subClient.on("error", (err) => console.error("Redis subClient error", err));
+// await subClient.connect();
 
 io.adapter(createAdapter(pubClient, subClient));
 
