@@ -1,9 +1,10 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const { createClient } = require("redis");
+const redis = require("redis");
 const { createAdapter } = require("@socket.io/redis-adapter");
 const bodyParser = require("body-parser");
+const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 const server = http.createServer(app);
@@ -11,8 +12,6 @@ const port = process.env.PORT || 3000;
 const io = new Server(server, {
   cors: { origin: "*", methods: ["GET","POST"] }
 });
-
-const { v4: uuidv4 } = require("uuid");
 
 const instanceId = uuidv4();
 console.log("Iniciando instancia con ID:", instanceId);
