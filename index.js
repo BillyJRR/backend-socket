@@ -1,10 +1,9 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const redis = require("redis");
+const { createClient } = require("redis");
 const { createAdapter } = require("@socket.io/redis-adapter");
 const bodyParser = require("body-parser");
-const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 const server = http.createServer(app);
@@ -12,6 +11,8 @@ const port = process.env.PORT || 3000;
 const io = new Server(server, {
   cors: { origin: "*", methods: ["GET","POST"] }
 });
+
+const { v4: uuidv4 } = require("uuid");
 
 const instanceId = uuidv4();
 console.log("Iniciando instancia con ID:", instanceId);
@@ -24,22 +25,31 @@ const REDIS_PORT_SOCKET = process.env.REDIS_PORT_SOCKET;
 const REDIS_KEY_SOCKET  = process.env.REDIS_KEY_SOCKET;
 
 // Conectar Redis con TLS (rediss)
-const pubClient = redis.createClient({
-  host: REDIS_HOST_SOCKET,
-  port: REDIS_PORT_SOCKET,
-  password: REDIS_KEY_SOCKET,
-  tls: {} // TLS activado para Azure
+async function setupRedisAdapter() {
+  const pubClient = createClient({
+    socket: {
+      host: REDIS_HOST_SOCKET,
+      port: REDIS_PORT_SOCKET,
+      tls: true
+    },
+    username: "default",
+    password: REDIS_KEY_SOCKET
+  });
+
+  pubClient.on("error", (err) => console.error("Redis pubClient error", err));
+  await pubClient.connect();
+
+  const subClient = pubClient.duplicate();
+  subClient.on("error", (err) => console.error("Redis subClient error", err));
+  await subClient.connect();
+
+  io.adapter(createAdapter(pubClient, subClient));
+}
+
+setupRedisAdapter().catch(err => {
+  console.error("Failed to setup Redis adapter", err);
+  process.exit(1);
 });
-
-pubClient.on("error", (err) => console.error("Redis pubClient error", err));
-// await pubClient.connect();
-
-const subClient = pubClient.duplicate();
-subClient.on("error", (err) => console.error("Redis subClient error", err));
-// await subClient.connect();
-
-io.adapter(createAdapter(pubClient, subClient));
-
 
 io.on("connection", (socket) => {
   console.log("Socket connected", socket.id);
