@@ -29,6 +29,7 @@ async function setupRedisAdapter() {
   const pubClient = createClient({
     url: `rediss://${REDIS_HOST}:${REDIS_PORT}`,
     password: REDIS_KEY,
+    socket: { tls: true }
   });
   pubClient.on("error", (err) => console.error("Redis pubClient error", err));
   await pubClient.connect();
