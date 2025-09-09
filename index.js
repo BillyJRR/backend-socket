@@ -27,7 +27,8 @@ const REDIS_KEY  = process.env.REDIS_KEY;
 // Conectar Redis con TLS (rediss)
 async function setupRedisAdapter() {
   const pubClient = createClient({
-    url: `rediss://default:${REDIS_KEY}@${REDIS_HOST}:${REDIS_PORT}`
+    url: `rediss://${REDIS_HOST}:${REDIS_PORT}`,
+    password: REDIS_KEY
   });
   pubClient.on("error", (err) => console.error("Redis pubClient error", err));
   await pubClient.connect();
