@@ -1,6 +1,8 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
+const { createClient } = require("redis");
+const { createAdapter } = require("@socket.io/redis-adapter");
 const bodyParser = require("body-parser");
 
 const app = express();
@@ -12,28 +14,44 @@ const io = new Server(server, {
 
 app.use(bodyParser.json());
 
-// Almacena sockets conectados
-let sockets = {};
+// CONFIG desde variables de entorno
+const REDIS_HOST = process.env.REDIS_HOST;
+const REDIS_PORT = process.env.REDIS_PORT; // TLS
+const REDIS_KEY  = process.env.REDIS_KEY;
 
-io.on("connection", (socket) => {
-  console.log("Cliente conectado:", socket.id);
-  sockets[socket.id] = socket;
-
-  socket.on("disconnect", () => {
-    console.log("Cliente desconectado:", socket.id);
-    delete sockets[socket.id];
+// Conectar Redis con TLS (rediss)
+async function setupRedisAdapter() {
+  const pubClient = createClient({
+    url: `rediss://${REDIS_HOST}:${REDIS_PORT}`,
+    password: REDIS_KEY,
   });
+  pubClient.on("error", (err) => console.error("Redis pubClient error", err));
+  await pubClient.connect();
+
+  const subClient = pubClient.duplicate();
+  subClient.on("error", (err) => console.error("Redis subClient error", err));
+  await subClient.connect();
+
+  io.adapter(createAdapter(pubClient, subClient));
+}
+
+setupRedisAdapter().catch(err => {
+  console.error("Failed to setup Redis adapter", err);
+  process.exit(1);
 });
 
-// Endpoint para recibir datos desde Postman y reenviar al front
+// Socket handlers
+io.on("connection", (socket) => {
+  console.log("Socket connected", socket.id);
+});
+
+// Endpoint que usas con Postman para enviar datos
 app.post("/send-data", (req, res) => {
   const data = req.body;
-  console.log("Datos recibidos:", data);
-
-  // Emitir datos a todos los sockets conectados
+  console.log("DATA: ", data);
+  // emitir a todos los clientes (replicado por Redis entre instancias)
   io.emit("formData", data);
-
   res.json({ status: "ok", sent: data });
 });
 
-server.listen(port, () => console.log(`Server listening on ${port}`));
+server.listen(port, () => console.log(`Server listening ${port}`));
