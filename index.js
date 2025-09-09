@@ -12,6 +12,11 @@ const io = new Server(server, {
   cors: { origin: "*", methods: ["GET","POST"] }
 });
 
+const { v4: uuidv4 } = require("uuid");
+
+const instanceId = uuidv4();
+console.log("Iniciando instancia con ID:", instanceId);
+
 app.use(bodyParser.json());
 
 // CONFIG desde variables de entorno
@@ -48,7 +53,7 @@ io.on("connection", (socket) => {
 // Endpoint que usas con Postman para enviar datos
 app.post("/send-data", (req, res) => {
   const data = req.body;
-  console.log("DATA: ", data);
+  console.log(`[${instanceId}] Mensaje recibido:`, req.body);
   // emitir a todos los clientes (replicado por Redis entre instancias)
   io.emit("formData", data);
   res.json({ status: "ok", sent: data });
