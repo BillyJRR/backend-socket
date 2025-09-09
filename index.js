@@ -32,7 +32,8 @@ async function setupRedisAdapter() {
       port: REDIS_PORT_SOCKET,
       tls: true,
     },
-    password: REDIS_KEY_SOCKET
+    password: REDIS_KEY_SOCKET,
+    legacyMode: true
   });
 
   pubClient.on("error", (err) => console.error("Redis pubClient error", err));
