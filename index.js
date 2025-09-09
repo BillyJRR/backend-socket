@@ -20,15 +20,16 @@ console.log("Iniciando instancia con ID:", instanceId);
 app.use(bodyParser.json());
 
 // CONFIG desde variables de entorno
-const REDIS_HOST = process.env.REDIS_HOST;
-const REDIS_PORT = process.env.REDIS_PORT;
-const REDIS_KEY  = process.env.REDIS_KEY;
+const REDIS_HOST_SOCKET = process.env.REDIS_HOST_SOCKET;
+const REDIS_PORT_SOCKET = process.env.REDIS_PORT_SOCKET;
+const REDIS_KEY_SOCKET  = process.env.REDIS_KEY_SOCKET;
 
 // Conectar Redis con TLS (rediss)
 async function setupRedisAdapter() {
   const pubClient = createClient({
     url: `rediss://${REDIS_HOST}:${REDIS_PORT}`,
-    password: REDIS_KEY
+    username: 'default',
+    password: REDIS_KEY_SOCKET
   });
   pubClient.on("error", (err) => console.error("Redis pubClient error", err));
   await pubClient.connect();
