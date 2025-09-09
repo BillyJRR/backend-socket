@@ -24,6 +24,9 @@ const REDIS_HOST_SOCKET = process.env.REDIS_HOST_SOCKET;
 const REDIS_PORT_SOCKET = process.env.REDIS_PORT_SOCKET;
 const REDIS_KEY_SOCKET  = process.env.REDIS_KEY_SOCKET;
 
+console.log("REDIS_HOST_SOCKET: ", REDIS_HOST_SOCKET);
+console.log("REDIS_KEY_SOCKET: ", REDIS_KEY_SOCKET);
+
 // Conectar Redis con TLS (rediss)
 async function setupRedisAdapter() {
   const pubClient = createClient({
