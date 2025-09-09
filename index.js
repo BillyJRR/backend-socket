@@ -21,7 +21,7 @@ app.use(bodyParser.json());
 
 // CONFIG desde variables de entorno
 const REDIS_HOST = process.env.REDIS_HOST;
-const REDIS_PORT = process.env.REDIS_PORT; // TLS
+const REDIS_PORT = process.env.REDIS_PORT;
 const REDIS_KEY  = process.env.REDIS_KEY;
 
 // Conectar Redis con TLS (rediss)
@@ -45,16 +45,13 @@ setupRedisAdapter().catch(err => {
   process.exit(1);
 });
 
-// Socket handlers
 io.on("connection", (socket) => {
   console.log("Socket connected", socket.id);
 });
 
-// Endpoint que usas con Postman para enviar datos
 app.post("/send-data", (req, res) => {
   const data = req.body;
   console.log(`[${instanceId}] Mensaje recibido:`, req.body);
-  // emitir a todos los clientes (replicado por Redis entre instancias)
   io.emit("formData", data);
   res.json({ status: "ok", sent: data });
 });
