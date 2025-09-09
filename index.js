@@ -25,28 +25,22 @@ const REDIS_PORT_SOCKET = process.env.REDIS_PORT_SOCKET;
 const REDIS_KEY_SOCKET  = process.env.REDIS_KEY_SOCKET;
 
 // Conectar Redis con TLS (rediss)
-async function setupRedisAdapter() {
-  const pubClient = redis.createClient({
-    host: REDIS_HOST_SOCKET,
-    port: REDIS_PORT_SOCKET,
-    password: REDIS_KEY_SOCKET,
-    tls: {} // TLS activado para Azure
-  });
-
-  pubClient.on("error", (err) => console.error("Redis pubClient error", err));
-  await pubClient.connect();
-
-  const subClient = pubClient.duplicate();
-  subClient.on("error", (err) => console.error("Redis subClient error", err));
-  await subClient.connect();
-
-  io.adapter(createAdapter(pubClient, subClient));
-}
-
-setupRedisAdapter().catch(err => {
-  console.error("Failed to setup Redis adapter", err);
-  process.exit(1);
+const pubClient = redis.createClient({
+  host: REDIS_HOST_SOCKET,
+  port: REDIS_PORT_SOCKET,
+  password: REDIS_KEY_SOCKET,
+  tls: {} // TLS activado para Azure
 });
+
+pubClient.on("error", (err) => console.error("Redis pubClient error", err));
+await pubClient.connect();
+
+const subClient = pubClient.duplicate();
+subClient.on("error", (err) => console.error("Redis subClient error", err));
+await subClient.connect();
+
+io.adapter(createAdapter(pubClient, subClient));
+
 
 io.on("connection", (socket) => {
   console.log("Socket connected", socket.id);
