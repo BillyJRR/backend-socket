@@ -26,14 +26,11 @@ const REDIS_KEY_SOCKET  = process.env.REDIS_KEY_SOCKET;
 
 // Conectar Redis con TLS (rediss)
 async function setupRedisAdapter() {
-  const pubClient = createClient({
-    socket: {
-      host: REDIS_HOST_SOCKET,
-      port: REDIS_PORT_SOCKET,
-      tls: true,
-    },
+  const pubClient = redis.createClient({
+    host: REDIS_HOST_SOCKET,
+    port: REDIS_PORT_SOCKET,
     password: REDIS_KEY_SOCKET,
-    legacyMode: true
+    tls: {} // TLS activado para Azure
   });
 
   pubClient.on("error", (err) => console.error("Redis pubClient error", err));
